@@ -3,8 +3,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class Nurse extends JFrame implements ActionListener {
+    private static ArrayList<String[]> nurses = new ArrayList<>();
+
     private JTextField id;
     private JTextField name;
     private JTextField ward;
@@ -43,7 +46,7 @@ public class Nurse extends JFrame implements ActionListener {
         shift = new JTextField(15);
         gridPanel.add(shift);
 
-        save = new JButton("Save");
+        save = new JButton("Add");
         save.addActionListener(this);
         gridPanel.add(save);
 
@@ -59,7 +62,7 @@ public class Nurse extends JFrame implements ActionListener {
         add(inputPanel, BorderLayout.WEST);
 
         displayArea = new JTextArea(10, 40);
-        displayArea.setText("Fill all the fields to Save the nurse.\nFill only ID to Search and Delete.");
+        displayArea.setText("Fill all the fields to add nurse.\nFill only ID to Search and Delete.");
         displayArea.setEditable(false);
         displayArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
         displayArea.setMargin(new Insets(10, 10, 10, 10));
@@ -76,13 +79,61 @@ public class Nurse extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == search) {
-
+            String nurseId = id.getText().trim();
+            if (nurseId.isEmpty()) {
+                displayArea.setText("Enter a nurse ID to search.");
+                return;
+            }
+            int index = findNurse(nurseId);
+            if (index == -1) {
+                displayArea.setText("Nurse not found.");
+            } else {
+                displayNurse(nurses.get(index));
+            }
         }
         if (e.getSource() == save) {
-
+            String[] nurse = {id.getText(), name.getText(), ward.getText(), shift.getText()};
+            for (String s : nurse) {
+                if (s.isEmpty()) {
+                    displayArea.setText("Fill all the fields to add nurse.");
+                    return;
+                }
+            }
+            if (findNurse(nurse[0]) != -1) {
+                displayArea.setText("A nurse with this ID already exists.");
+                return;
+            }
+            nurses.add(nurse);
+            displayNurse(nurse);
+            displayArea.append("\nNurse added.");
         }
         if (e.getSource() == delete) {
-
+            String nurseId = id.getText();
+            if (nurseId.isEmpty()) {
+                displayArea.setText("Enter a nurse ID to delete.");
+                return;
+            }
+            int index = findNurse(nurseId);
+            if (index == -1) {
+                displayArea.setText("Nurse not found.");
+            } else {
+                nurses.remove(index);
+                displayArea.setText("Nurse deleted.");
+            }
         }
+    }
+
+    private int findNurse(String nurseId) {
+        for (int i = 0; i < nurses.size(); i++) {
+            if (nurses.get(i)[0].equals(nurseId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void displayNurse(String[] nurse) {
+        displayArea.setText(String.format("ID : %s\nName : %s\nWard : %s\nShift : %s",
+                nurse[0], nurse[1], nurse[2], nurse[3]));
     }
 }

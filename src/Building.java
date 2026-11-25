@@ -3,8 +3,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class Building extends JFrame implements ActionListener {
+    private static ArrayList<String[]> buildings = new ArrayList<>();
+
     private JTextField name;
     private JTextField number;
     private JTextField capacity;
@@ -38,7 +41,7 @@ public class Building extends JFrame implements ActionListener {
         capacity = new JTextField(15);
         gridPanel.add(capacity);
 
-        save = new JButton("Save");
+        save = new JButton("Add");
         save.addActionListener(this);
         gridPanel.add(save);
 
@@ -54,7 +57,7 @@ public class Building extends JFrame implements ActionListener {
         add(inputPanel, BorderLayout.WEST);
 
         displayArea = new JTextArea(10, 50);
-        displayArea.setText("Fill all the fields to Save the building.\nFill only Name or Number to Search and Delete.");
+        displayArea.setText("Fill all the fields to add building.\nFill only Number to Search and Delete.");
         displayArea.setEditable(false);
         displayArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
         displayArea.setMargin(new Insets(10, 10, 10, 10));
@@ -71,13 +74,62 @@ public class Building extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == search) {
-
+            String buildingNumber = number.getText();
+            if (buildingNumber.isEmpty()) {
+                displayArea.setText("Enter a building number to search.");
+                return;
+            }
+            int index = findBuilding(buildingNumber);
+            if (index == -1) {
+                displayArea.setText("Building not found.");
+            } else {
+                displayBuilding(buildings.get(index));
+            }
         }
         if (e.getSource() == save) {
-
+            String[] building = {number.getText(), name.getText(), capacity.getText()};
+            for (String value : building) {
+                if (value.isEmpty()) {
+                    displayArea.setText("Fill all the fields to add building.");
+                    return;
+                }
+            }
+            if (findBuilding(building[0]) != -1) {
+                displayArea.setText("A building with this number already exists.");
+                return;
+            }
+            buildings.add(building);
+            displayBuilding(building);
+            displayArea.append("\nBuilding added.");
         }
         if (e.getSource() == delete) {
+            String buildingNumber = number.getText();
+            if (buildingNumber.isEmpty()) {
+                displayArea.setText("Enter a building number to delete.");
+                return;
+            }
 
+            int index = findBuilding(buildingNumber);
+            if (index == -1) {
+                displayArea.setText("Building not found.");
+            } else {
+                buildings.remove(index);
+                displayArea.setText("Building deleted.");
+            }
         }
+    }
+
+    private int findBuilding(String buildingNumber) {
+        for (int i = 0; i < buildings.size(); i++) {
+            if (buildings.get(i)[0].equals(buildingNumber)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void displayBuilding(String[] building) {
+        displayArea.setText(String.format("Number : %s\nName : %s\nCapacity : %s",
+                building[0], building[1], building[2]));
     }
 }

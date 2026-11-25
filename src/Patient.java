@@ -3,13 +3,16 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class Patient extends JFrame implements ActionListener {
+    private static ArrayList<String[]> patients = new ArrayList<>();
+
     private JTextField id;
     private JTextField name;
     private JTextField problem;
     private JTextField wardId;
-    private JTextField bedId;
+    private JTextField roomId;
 
     private JButton search;
     private JButton save;
@@ -45,10 +48,10 @@ public class Patient extends JFrame implements ActionListener {
         gridPanel.add(wardId);
 
         gridPanel.add(new JLabel("Bed ID:"));
-        bedId = new JTextField(15);
-        gridPanel.add(bedId);
+        roomId = new JTextField(15);
+        gridPanel.add(roomId);
 
-        save = new JButton("Save");
+        save = new JButton("Add");
         save.addActionListener(this);
         gridPanel.add(save);
 
@@ -64,7 +67,7 @@ public class Patient extends JFrame implements ActionListener {
         add(inputPanel, BorderLayout.WEST);
 
         displayArea = new JTextArea(10, 40);
-        displayArea.setText("Fill all the fields to Save the patient.\nFill only ID to Search and Delete.");
+        displayArea.setText("Fill all the fields to add patient.\nFill only ID to Search and Delete.");
         displayArea.setEditable(false);
         displayArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
         displayArea.setMargin(new Insets(10, 10, 10, 10));
@@ -81,13 +84,61 @@ public class Patient extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == search) {
-
+            String patientId = id.getText().trim();
+            if (patientId.isEmpty()) {
+                displayArea.setText("Enter a patient ID to search.");
+                return;
+            }
+            int index = findPatient(patientId);
+            if (index == -1) {
+                displayArea.setText("Patient not found.");
+            } else {
+                displayPatient(patients.get(index));
+            }
         }
         if (e.getSource() == save) {
-
+            String[] patient = {id.getText(), name.getText(), problem.getText(), wardId.getText(), roomId.getText()};
+            for (String value : patient) {
+                if (value.isEmpty()) {
+                    displayArea.setText("Fill all the fields to add patient.");
+                    return;
+                }
+            }
+            if (findPatient(patient[0]) != -1) {
+                displayArea.setText("A patient with this ID already exists.");
+                return;
+            }
+            patients.add(patient);
+            displayPatient(patient);
+            displayArea.append("\nPatient added.");
         }
         if (e.getSource() == delete) {
-
+            String patientId = id.getText();
+            if (patientId.isEmpty()) {
+                displayArea.setText("Enter a patient ID to delete.");
+                return;
+            }
+            int index = findPatient(patientId);
+            if (index == -1) {
+                displayArea.setText("Patient not found.");
+            } else {
+                patients.remove(index);
+                displayArea.setText("Patient deleted.");
+            }
         }
+    }
+
+    private int findPatient(String patientId) {
+        for (int i = 0; i < patients.size(); i++) {
+            if (patients.get(i)[0].equals(patientId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void displayPatient(String[] patient) {
+        displayArea.setText(String.format("ID : %s\nName : %s\nProblem : %s\nWard ID : %s\nRoom No : %s",
+                patient[0], patient[1], patient[2], patient[3], patient[4]));
     }
 }
